@@ -6,6 +6,7 @@ from communication import SmsSender, MailSender
 from booking_scheduler import BookingScheduler
 from datetime import timedelta
 from test_communication import TestableSmsSender
+from test_communication import TestableMailSender
 
 UNDER_CAPACITY = 1
 CAPACITY_PER_HOUR = 3
@@ -106,12 +107,46 @@ def test_예약완료시_SMS는_무조건_발송(booking_scheduler_with_sms_mock
     assert testable_sms_sender.send_called
 
 
-def test_이메일이_없는_경우에는_이메일_미발송():
-    pass
+def test_이메일이_없는_경우에는_이메일_미발송(booking_scheduler):
+    # arrange
+    testable_mail_sender = TestableMailSender()
+    booking_scheduler.set_mail_sender(testable_mail_sender)
+
+    schedule = Schedule(
+        ON_THE_HOUR,
+        UNDER_CAPACITY,
+        CUSTOMER
+    )
+
+    # act
+    booking_scheduler.add_schedule(schedule)
+
+    # assert
+    assert testable_mail_sender.send_mail_count == 0
 
 
-def test_이메일이_있는_경우에는_이메일_발송():
-    pass
+def test_이메일이_있는_경우에는_이메일_발송(booking_scheduler):
+    # arrange
+    testable_mail_sender = TestableMailSender()
+    booking_scheduler.set_mail_sender(testable_mail_sender)
+
+    customer = Customer(
+        "Fake name",
+        "010-1234-5678",
+        "test@test.com"
+    )
+
+    schedule = Schedule(
+        ON_THE_HOUR,
+        UNDER_CAPACITY,
+        customer
+    )
+
+    # act
+    booking_scheduler.add_schedule(schedule)
+
+    # assert
+    assert testable_mail_sender.send_mail_count == 1
 
 
 def test_현재날짜가_일요일인_경우_예약불가_예외처리():
