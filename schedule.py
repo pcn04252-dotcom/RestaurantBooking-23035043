@@ -1,3 +1,4 @@
+# schedule.py
 class Customer:
     def __init__(self, name, phone_number, email=None):
         self.name = name
