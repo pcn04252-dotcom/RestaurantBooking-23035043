@@ -7,6 +7,7 @@ from booking_scheduler import BookingScheduler
 from datetime import timedelta
 from test_communication import TestableSmsSender
 from test_communication import TestableMailSender
+from test_communication import TestableBookingScheduler
 
 UNDER_CAPACITY = 1
 CAPACITY_PER_HOUR = 3
@@ -157,8 +158,36 @@ def test_이메일이_있는_경우에는_이메일_발송(booking_scheduler_wit
 
 
 def test_현재날짜가_일요일인_경우_예약불가_예외처리():
-    pass
+    # arrange
+    booking_scheduler = TestableBookingScheduler(CAPACITY_PER_HOUR)
+    booking_scheduler.set_sunday()
+
+    schedule = Schedule(
+        ON_THE_HOUR,
+        UNDER_CAPACITY,
+        CUSTOMER
+    )
+
+    # act & assert
+    with pytest.raises(
+        ValueError,
+        match="Booking system is not available on Sunday"
+    ):
+        booking_scheduler.add_schedule(schedule)
 
 
 def test_현재날짜가_일요일이_아닌경우_예약가능():
-    pass
+    # arrange
+    booking_scheduler = TestableBookingScheduler(CAPACITY_PER_HOUR)
+
+    schedule = Schedule(
+        ON_THE_HOUR,
+        UNDER_CAPACITY,
+        CUSTOMER
+    )
+
+    # act
+    booking_scheduler.add_schedule(schedule)
+
+    # assert
+    assert booking_scheduler.has_schedule(schedule)
